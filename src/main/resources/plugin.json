@@ -1,0 +1,4 @@
+{
+  "name": "FakeBluetoothPrinter",
+  "main": "io.github.andrewsumsion.bluetoothprinter.FakeBluetoothPrinter"
+}
