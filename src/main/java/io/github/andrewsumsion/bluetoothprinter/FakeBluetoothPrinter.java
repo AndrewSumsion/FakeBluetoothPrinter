@@ -1,24 +1,18 @@
 package io.github.andrewsumsion.bluetoothprinter;
 
-import com.sun.tools.javac.util.StringUtils;
 import io.github.andrewsumsion.bluetoothprinter.commands.*;
 import io.github.andrewsumsion.threepos.Plugin;
-import org.apache.commons.io.FileUtils;
 
-import javax.bluetooth.*;
+import javax.bluetooth.DiscoveryAgent;
+import javax.bluetooth.LocalDevice;
+import javax.bluetooth.RemoteDevice;
 import javax.bluetooth.UUID;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnection;
 import javax.microedition.io.StreamConnectionNotifier;
 import java.io.*;
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -197,11 +191,10 @@ public class FakeBluetoothPrinter extends Plugin {
         System.out.println("Device name: " + local.getFriendlyName());
         System.out.println("Bluetooth Address: " +
                 local.getBluetoothAddress());
-        boolean res = local.setDiscoverable(DiscoveryAgent.GIAC);
-        System.out.println("Discoverability set: " + res);
+//        boolean res = local.setDiscoverable(DiscoveryAgent.GIAC);
+//        System.out.println("Discoverability set: " + res);
 
         //Create a UUID for SPP
-//        UUID uuid = new UUID("1103", true);
         UUID uuid = new UUID("0000110100001000800000805F9B34FB", false);
         //Create the service url
         String connectionString = "btspp://localhost:" + uuid +";name=FakeBluetoothPrinter";
@@ -323,6 +316,9 @@ public class FakeBluetoothPrinter extends Plugin {
 
         }
 
+        in.close();
+        out.close();
+
     }
 
     private byte[] createByteBuffer(List<Byte> bytes) {
@@ -349,9 +345,21 @@ public class FakeBluetoothPrinter extends Plugin {
 
     private static class WrappedInputStream extends InputStream {
         private final InputStream wrapped;
+        private OutputStream fileOutputStream;
 
         public WrappedInputStream(InputStream wrapped) {
             this.wrapped = wrapped;
+            File output = new File(System.getProperty("user.home") + "/Desktop/network-in.dat");
+            try {
+                fileOutputStream = new FileOutputStream(output);
+            } catch (FileNotFoundException e) {
+                fileOutputStream = new OutputStream() {
+                    @Override
+                    public void write(int i) throws IOException {
+
+                    }
+                };
+            }
         }
 
         @Override
@@ -363,15 +371,34 @@ public class FakeBluetoothPrinter extends Plugin {
                 //String s1 = String.format("%8s", Integer.toBinaryString(data & 0xFF)).replace('0', ' ');
                 //System.out.print(s1 + "");
             }
+            fileOutputStream.write(data);
             return data;
+        }
+
+        @Override
+        public void close() throws IOException {
+            wrapped.close();
+            fileOutputStream.close();
         }
     }
 
     private static class WrappedOutputStream extends OutputStream {
         private final OutputStream wrapped;
+        private OutputStream fileOutputStream;
 
         public WrappedOutputStream(OutputStream wrapped) {
             this.wrapped = wrapped;
+            File output = new File(System.getProperty("user.home") + "/Desktop/network-out.dat");
+            try {
+                fileOutputStream = new FileOutputStream(output);
+            } catch (FileNotFoundException e) {
+                fileOutputStream = new OutputStream() {
+                    @Override
+                    public void write(int i) throws IOException {
+
+                    }
+                };
+            }
         }
 
         @Override
@@ -380,6 +407,13 @@ public class FakeBluetoothPrinter extends Plugin {
                 System.out.print("" + i + " ");
             }
             wrapped.write(i);
+            fileOutputStream.write(i);
+        }
+
+        @Override
+        public void close() throws IOException {
+            wrapped.close();
+            fileOutputStream.close();
         }
     }
 }
