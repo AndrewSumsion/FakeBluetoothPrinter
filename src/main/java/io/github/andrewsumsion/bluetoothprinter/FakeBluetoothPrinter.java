@@ -27,28 +27,10 @@ public class FakeBluetoothPrinter extends Plugin {
     private static String tesseractDataPath = "";
     private static final Set<InboundCommand> commands = new HashSet<>();
     private static final List<Integer> headerCodes = Arrays.asList(
-            4,
-            5,
-            7,
-            9,
-            11,
-            12,
-            13,
-            14,
-            15,
-            17,
-            18,
-            19,
-            20,
             23,
-            24,
-            25,
-            26,
             27,
-            28,
             98,
             107
-//            30
     );
     private static final List<Integer> rasterHeaderCodes = Arrays.asList(
             98,
@@ -269,6 +251,7 @@ public class FakeBluetoothPrinter extends Plugin {
                 }
 
                 if ((headerCodes.contains((int) inByte) /*|| (rasterHeaderCodes.contains((int) inByte) && FakeBluetoothPrinter.data.getPrintingMode() == PrintingMode.RASTER)*/) && buffer.size() > 0) {
+                    System.out.println("\n\nUNKNOWN COMMAND RECEIVED!!!\n");
                     printData.write(createByteBuffer(buffer));
                     buffer.clear();
                 }
