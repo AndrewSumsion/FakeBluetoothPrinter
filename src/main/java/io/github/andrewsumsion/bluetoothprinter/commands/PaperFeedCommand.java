@@ -3,8 +3,6 @@ package io.github.andrewsumsion.bluetoothprinter.commands;
 import io.github.andrewsumsion.bluetoothprinter.FakeBluetoothPrinter;
 import io.github.andrewsumsion.bluetoothprinter.PrintingMode;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -18,7 +16,7 @@ public class PaperFeedCommand implements InboundCommand {
 
     @Override
     public void execute(byte[] command, DataInputStream in, DataOutputStream out) throws IOException {
-        if(FakeBluetoothPrinter.data.getPrintingMode() == PrintingMode.RASTER) {
+        if(FakeBluetoothPrinter.data.getPrintingMode() == PrintingMode.HYBRID) {
 //            BufferedImage image = new BufferedImage(1, command[2], BufferedImage.TYPE_INT_ARGB);
 //            Graphics2D g2 = image.createGraphics();
 //            g2.setPaint(new Color(255, 255, 255));

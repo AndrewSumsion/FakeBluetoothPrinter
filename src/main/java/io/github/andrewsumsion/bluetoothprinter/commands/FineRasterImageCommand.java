@@ -1,7 +1,6 @@
 package io.github.andrewsumsion.bluetoothprinter.commands;
 
 import io.github.andrewsumsion.bluetoothprinter.FakeBluetoothPrinter;
-import io.github.andrewsumsion.bluetoothprinter.PrinterData;
 import io.github.andrewsumsion.bluetoothprinter.PrintingMode;
 
 import java.awt.*;
@@ -19,7 +18,7 @@ public class FineRasterImageCommand implements InboundCommand {
 
     @Override
     public void execute(byte[] command, DataInputStream in, DataOutputStream out) throws IOException {
-        FakeBluetoothPrinter.data.setPrintingMode(PrintingMode.RASTER);
+        FakeBluetoothPrinter.data.setPrintingMode(PrintingMode.HYBRID);
         int n1 = command[2] & 0xFF;
         int n2 = command[3] & 0xFF;
         int k = (n2 * 256 + n1) * 3;

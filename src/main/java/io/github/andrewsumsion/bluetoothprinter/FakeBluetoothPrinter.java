@@ -23,12 +23,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class FakeBluetoothPrinter extends Plugin {
-    public static boolean debugInput = false;
+    public static boolean debugInput = true;
     public static boolean debugOutput = false;
 
     public static PrinterStatus status = new PrinterStatus();
     public static PrinterData data = new PrinterData();
-    public static PrintingMode printingMode = PrintingMode.PAGE;
 
     public static final String MODEL_NAME = "FakeBluetoothPrinterVer1.0.0";
     private static String tesseractDataPath = "";
@@ -52,8 +51,14 @@ public class FakeBluetoothPrinter extends Plugin {
             25,
             26,
             27,
-            28
+            28,
+            98,
+            107
 //            30
+    );
+    private static final List<Integer> rasterHeaderCodes = Arrays.asList(
+            98,
+            107
     );
 
     private Thread jobManagerThread;
@@ -81,6 +86,12 @@ public class FakeBluetoothPrinter extends Plugin {
         commands.add(new PositionAlignmentCommand());
         commands.add(new PaperFeedCommand());
         commands.add(new FineRasterImageCommand());
+        commands.add(new InitializeRasterModeCommand());
+        commands.add(new EnterRasterModeCommand());
+        commands.add(new SetRasterPageLengthCommand());
+        commands.add(new CutterModeCommand());
+        commands.add(new RasterVerticalMoveCommand());
+        commands.add(new RasterDataTransferCommand());
 
         registerJobHandler(new JobHandler() {
             @Override
@@ -264,7 +275,7 @@ public class FakeBluetoothPrinter extends Plugin {
                     break;
                 }
 
-                if (headerCodes.contains((int) inByte) && buffer.size() > 0) {
+                if ((headerCodes.contains((int) inByte) /*|| (rasterHeaderCodes.contains((int) inByte) && FakeBluetoothPrinter.data.getPrintingMode() == PrintingMode.RASTER)*/) && buffer.size() > 0) {
                     printData.write(createByteBuffer(buffer));
                     buffer.clear();
                 }
@@ -295,14 +306,19 @@ public class FakeBluetoothPrinter extends Plugin {
         try {
             if(FakeBluetoothPrinter.data.getPrintingMode() == PrintingMode.PAGE) {
                 JobManager.getInstance().submitJob(new TextPrintingJob(printData.toByteArray()));
-            } else {
+            } else /*if(FakeBluetoothPrinter.data.getPrintingMode() == PrintingMode.HYBRID)*/ {
                 RasterPrintingJob rasterJob = new RasterPrintingJob(FakeBluetoothPrinter.data.getRasterData());
                 OCRPrintingJob ocrJob = new OCRPrintingJob(rasterJob.getData(), tesseractDataPath);
                 JobManager.getInstance().submitJob(rasterJob);
                 JobManager.getInstance().submitJob(ocrJob);
                 FakeBluetoothPrinter.data.getRasterData().clear();
                 FakeBluetoothPrinter.data.setRasterPointer(0);
-            }
+            }/* else {
+                RasterPrintingJob rasterJob = new RasterPrintingJob(printData.toByteArray());
+                OCRPrintingJob ocrJob = new OCRPrintingJob(rasterJob.getData(), tesseractDataPath);
+                JobManager.getInstance().submitJob(rasterJob);
+                JobManager.getInstance().submitJob(ocrJob);
+            }*/
         } catch (InterruptedException ignored) {
 
         }

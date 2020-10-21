@@ -7,25 +7,23 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class QuitRasterModeCommand implements InboundCommand {
+public class EnterRasterModeCommand implements InboundCommand {
     @Override
     public boolean matches(byte[] command) {
         return command[0] == 27 &&
                 command[1] == 42 &&
                 command[2] == 114 &&
-                command[3] == 66;
+                command[3] == 65;
     }
 
     @Override
     public void execute(byte[] command, DataInputStream in, DataOutputStream out) throws IOException {
-        if(FakeBluetoothPrinter.data.getPrintingMode() != PrintingMode.RASTER) {
-            FakeBluetoothPrinter.data.setPrintingMode(PrintingMode.PAGE);
-        }
+        FakeBluetoothPrinter.data.setPrintingMode(PrintingMode.RASTER);
     }
 
     @Override
     public String getDescription() {
-        return "Quit Raster Mode";
+        return "Enter Raster Mode";
     }
 
     @Override

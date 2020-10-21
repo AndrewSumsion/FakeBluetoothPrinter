@@ -1,19 +1,65 @@
 package io.github.andrewsumsion.bluetoothprinter;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class RasterPrintingJob extends PrintingJob {
-    private final Map<Integer, BufferedImage> imageData;
+    private Map<Integer, BufferedImage> imageData;
     private BufferedImage renderedImage = null;
 
-    protected RasterPrintingJob(Map<Integer, BufferedImage> imageData) {
+    public RasterPrintingJob(Map<Integer, BufferedImage> imageData) {
         super(new byte[0]);
         this.imageData = new HashMap<>(imageData);
+    }
+
+    public RasterPrintingJob(byte[] data) {
+        super(data);
+//        int finalWidth = 569;
+//        renderedImage = dataToImage(data, finalWidth);
+//
+//        for(int i = 300; i <= 400; i++) {
+//            BufferedImage image = dataToImage(data, i);
+//            try {
+//                ImageIO.write(image, "png", new File("/home/andrew/Desktop/raster/raster" + i + ".png"));
+//            } catch (IOException e) {
+//
+//            }
+//        }
+    }
+
+    private BufferedImage dataToImage(byte[] data, int width) {
+        int finalWidth = width;
+        int finalHeight = (int)(Math.ceil((double)data.length / (double)finalWidth));
+        System.out.println("Width:  " + finalWidth);
+        System.out.println("Height: " + finalHeight);
+        BufferedImage finalImage = new BufferedImage(finalWidth + 1000, finalHeight + 1000, BufferedImage.TYPE_INT_ARGB);
+        int x = 0;
+        int y = 0;
+        for(int i = 0; i < data.length; i++) {
+            Color transparent = new Color(0, 0, 0, 0);
+            finalImage.setRGB(x + 0, y, (((data[i] & 128) != 0) ? Color.BLACK : transparent).getRGB());
+            finalImage.setRGB(x + 1, y, (((data[i] &  64) != 0) ? Color.BLACK : transparent).getRGB());
+            finalImage.setRGB(x + 2, y, (((data[i] &  32) != 0) ? Color.BLACK : transparent).getRGB());
+            finalImage.setRGB(x + 3, y, (((data[i] &  16) != 0) ? Color.BLACK : transparent).getRGB());
+            finalImage.setRGB(x + 4, y, (((data[i] &   8) != 0) ? Color.BLACK : transparent).getRGB());
+            finalImage.setRGB(x + 5, y, (((data[i] &   4) != 0) ? Color.BLACK : transparent).getRGB());
+            finalImage.setRGB(x + 6, y, (((data[i] &   2) != 0) ? Color.BLACK : transparent).getRGB());
+            finalImage.setRGB(x + 7, y, (((data[i] &   1) != 0) ? Color.BLACK : transparent).getRGB());
+
+            x += 8;
+            if(x >= finalWidth) {
+                x = 0;
+                y += 1;
+            }
+        }
+        return finalImage;
     }
 
     @Override
@@ -52,6 +98,9 @@ public class RasterPrintingJob extends PrintingJob {
 
     @Override
     public byte[] getRawData() {
-        throw new UnsupportedOperationException("Raster Jobs do not support raw data");
+        if(rawData.length < 1) {
+            throw new UnsupportedOperationException("Hybrid Raster Jobs do not support raw data");
+        }
+        return rawData;
     }
 }
