@@ -1,6 +1,6 @@
 package io.github.andrewsumsion.bluetoothprinter.commands;
 
-import io.github.andrewsumsion.bluetoothprinter.FakeBluetoothPrinter;
+import io.github.andrewsumsion.bluetoothprinter.PrinterData;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class RasterVerticalMoveCommand implements InboundCommand {
     @Override
-    public boolean matches(byte[] command) {
+    public boolean matches(byte[] command, PrinterData printerData) {
         //27 42 114 89
         return command[0] == 27 &&
                 command[1] == 42 &&
@@ -17,8 +17,8 @@ public class RasterVerticalMoveCommand implements InboundCommand {
     }
 
     @Override
-    public void execute(byte[] command, DataInputStream in, DataOutputStream out) throws IOException {
-        FakeBluetoothPrinter.data.setRasterPointer(FakeBluetoothPrinter.data.getRasterPointer() + command[4]);
+    public void execute(byte[] command, DataInputStream in, DataOutputStream out, PrinterData printerData) throws IOException {
+        printerData.setRasterPointer(printerData.getRasterPointer() + command[4]);
     }
 
     @Override

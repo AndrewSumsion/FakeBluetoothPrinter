@@ -3,9 +3,7 @@ package io.github.andrewsumsion.bluetoothprinter;
 import io.github.andrewsumsion.bluetoothprinter.commands.*;
 import io.github.andrewsumsion.threepos.Plugin;
 
-import javax.bluetooth.DiscoveryAgent;
 import javax.bluetooth.LocalDevice;
-import javax.bluetooth.RemoteDevice;
 import javax.bluetooth.UUID;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnection;
@@ -17,27 +15,17 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class FakeBluetoothPrinter extends Plugin {
-    public static boolean debugInput = true;
+    public static boolean debugInput = false;
     public static boolean debugOutput = false;
 
     public static PrinterStatus status = new PrinterStatus();
-    public static PrinterData data = new PrinterData();
 
     public static final String MODEL_NAME = "FakeBluetoothPrinterVer1.0.0";
-    private static String tesseractDataPath = "";
-    private static final Set<InboundCommand> commands = new HashSet<>();
-    private static final List<Integer> headerCodes = Arrays.asList(
-            23,
-            27,
-            98,
-            107
-    );
-    private static final List<Integer> rasterHeaderCodes = Arrays.asList(
-            98,
-            107
-    );
+    public static final Set<InboundCommand> commands = new HashSet<>();
+    public static String tesseractDataPath = "";
 
     private Thread jobManagerThread;
+    private Map<Connection, Thread> connectionThreads = new HashMap<>();
 
     public static void registerJobHandler(JobHandler handler) {
         JobManager.getInstance().registerHandler(handler);
@@ -90,6 +78,21 @@ public class FakeBluetoothPrinter extends Plugin {
             System.err.println("Unable to initialize resources. OCR will not work!");
             e.printStackTrace();
         }
+
+        jobManagerThread = new Thread() {
+            @Override
+            public void run() {
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        JobManager.getInstance().executeJob();
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                }
+            }
+        };
+
+        jobManagerThread.start();
 
         try {
             startRFCOMMServer();
@@ -169,149 +172,62 @@ public class FakeBluetoothPrinter extends Plugin {
     }
 
     private void startRFCOMMServer() throws IOException {
+//        File file = new File(System.getProperty("user.home") + "/Desktop//network-in.dat");
+//        InputStream inputStream = new FileInputStream(file);
+//        OutputStream outputStream = new OutputStream() {
+//            @Override
+//            public void write(int b) throws IOException {
+//
+//            }
+//        };
+//        Connection connection = new Connection(inputStream, outputStream);
+//        connection.runConnection();
         LocalDevice local = LocalDevice.getLocalDevice();
         System.out.println("Device name: " + local.getFriendlyName());
         System.out.println("Bluetooth Address: " +
                 local.getBluetoothAddress());
-//        boolean res = local.setDiscoverable(DiscoveryAgent.GIAC);
-//        System.out.println("Discoverability set: " + res);
 
-        //Create a UUID for SPP
         UUID uuid = new UUID("0000110100001000800000805F9B34FB", false);
-        //Create the service url
         String connectionString = "btspp://localhost:" + uuid +";name=FakeBluetoothPrinter";
 
-        //open server url
         StreamConnectionNotifier streamConnNotifier = (StreamConnectionNotifier) Connector.open( connectionString );
 
-        //Wait for client connection
         System.out.println("\nServer Started. Waiting for clients to connect...");
-
-        jobManagerThread = new Thread() {
-            @Override
-            public void run() {
-                while (!Thread.currentThread().isInterrupted()) {
-                    try {
-                        JobManager.getInstance().executeJob();
-                    } catch (InterruptedException e) {
-                        break;
-                    }
-                }
-            }
-        };
-
-        jobManagerThread.start();
 
         while (true) {
             if(Thread.currentThread().isInterrupted()) {
-                jobManagerThread.interrupt();
                 break;
             }
 
-            final StreamConnection connection = streamConnNotifier.acceptAndOpen();
+            final StreamConnection bluetoothConnection = streamConnNotifier.acceptAndOpen();
+            Connection connection = new Connection(bluetoothConnection.openDataInputStream(), bluetoothConnection.openDataOutputStream());
             if(debugInput) {
                 System.out.println("Client connected!");
             }
 
-            try {
-                runConnection(connection);
-                if(debugInput) {
-                    System.out.println("\nDevice disconnected");
-                }
-            } catch (IOException ignored) {
-
-            } finally {
-                try {
-                    connection.close();
-                } catch (IOException ignored) {
-
-                }
-            }
-        }
-    }
-
-    private void runConnection(StreamConnection connection) throws IOException {
-        RemoteDevice dev = RemoteDevice.getRemoteDevice(connection);
-        if(debugInput) {
-            System.out.println("Remote device address: " + dev.getBluetoothAddress());
-            System.out.println("Remote device name: " + dev.getFriendlyName(true));
-        }
-        DataInputStream in = new DataInputStream(new WrappedInputStream(connection.openInputStream()));
-        DataOutputStream out = new DataOutputStream(new WrappedOutputStream(connection.openOutputStream()));
-
-        ByteArrayOutputStream printData = new ByteArrayOutputStream();
-
-        List<Byte> buffer = new ArrayList<>();
-        try {
-            while (true) {
-                int inByteAsInt = in.read();
-                byte inByte = (byte) inByteAsInt;
-                if(inByteAsInt == -1) {
-                    break;
-                }
-
-                if ((headerCodes.contains((int) inByte) /*|| (rasterHeaderCodes.contains((int) inByte) && FakeBluetoothPrinter.data.getPrintingMode() == PrintingMode.RASTER)*/) && buffer.size() > 0) {
-                    System.out.println("\n\nUNKNOWN COMMAND RECEIVED!!!\n");
-                    printData.write(createByteBuffer(buffer));
-                    buffer.clear();
-                }
-
-                buffer.add(inByte);
-
-
-                for (InboundCommand command : commands) {
-                    if (buffer.size() == command.getMatchingLength() && command.matches(createByteBuffer(buffer))) {
-                        while (buffer.size() < command.getLength()) {
-                            buffer.add((byte) in.read());
+            Thread connectionThread = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        connection.runConnection();
+                        if(debugInput) {
+                            System.out.println("\nDevice disconnected");
                         }
-                        command.execute(createByteBuffer(buffer), in, out);
-                        if (debugInput) {
-                            System.out.println("\nReceived command: " + command.getDescription());
+                    } catch (IOException ignored) {
+
+                    } finally {
+                        try {
+                            connection.close();
+                        } catch (IOException ignored) {
+
                         }
-                        buffer.clear();
-                        break;
                     }
                 }
-            }
-        } catch (IOException e) {
+            };
 
+            connectionThreads.put(connection, connectionThread);
+            connectionThread.start();
         }
-
-
-
-        try {
-            if(FakeBluetoothPrinter.data.getPrintingMode() == PrintingMode.PAGE) {
-                JobManager.getInstance().submitJob(new TextPrintingJob(printData.toByteArray()));
-            } else /*if(FakeBluetoothPrinter.data.getPrintingMode() == PrintingMode.HYBRID)*/ {
-                RasterPrintingJob rasterJob = new RasterPrintingJob(FakeBluetoothPrinter.data.getRasterData());
-                OCRPrintingJob ocrJob = new OCRPrintingJob(rasterJob.getData(), tesseractDataPath);
-                JobManager.getInstance().submitJob(rasterJob);
-                JobManager.getInstance().submitJob(ocrJob);
-                FakeBluetoothPrinter.data.getRasterData().clear();
-                FakeBluetoothPrinter.data.setRasterPointer(0);
-            }/* else {
-                RasterPrintingJob rasterJob = new RasterPrintingJob(printData.toByteArray());
-                OCRPrintingJob ocrJob = new OCRPrintingJob(rasterJob.getData(), tesseractDataPath);
-                JobManager.getInstance().submitJob(rasterJob);
-                JobManager.getInstance().submitJob(ocrJob);
-            }*/
-        } catch (InterruptedException ignored) {
-
-        }
-
-        in.close();
-        out.close();
-
-    }
-
-    private byte[] createByteBuffer(List<Byte> bytes) {
-        byte[] result = new byte[bytes.size()];
-        int i = 0;
-        for(Byte b : bytes) {
-            result[i] = b;
-            i++;
-        }
-        return result;
     }
 
     private String formatModelString(String modelString) {

@@ -1,19 +1,21 @@
 package io.github.andrewsumsion.bluetoothprinter.commands;
 
+import io.github.andrewsumsion.bluetoothprinter.PrinterData;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class PositionAlignmentCommand implements InboundCommand {
     @Override
-    public boolean matches(byte[] command) {
+    public boolean matches(byte[] command, PrinterData printerData) {
         return command[0] == 27 &&
                 command[1] == 29 &&
                 command[2] == 97;
     }
 
     @Override
-    public void execute(byte[] command, DataInputStream in, DataOutputStream out) throws IOException {
+    public void execute(byte[] command, DataInputStream in, DataOutputStream out, PrinterData printerData) throws IOException {
 
     }
 

@@ -1,12 +1,14 @@
 package io.github.andrewsumsion.bluetoothprinter.commands;
 
+import io.github.andrewsumsion.bluetoothprinter.PrinterData;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class RequestModelInfoCommand implements InboundCommand {
     @Override
-    public boolean matches(byte[] command) {
+    public boolean matches(byte[] command, PrinterData printerData) {
         return command[0] == 27 &&
                 command[1] == 35 &&
                 command[2] == 42;
@@ -15,7 +17,7 @@ public class RequestModelInfoCommand implements InboundCommand {
     // a1 = [27, 35, 42, 44]
     // a2 = [10, 0]
     @Override
-    public void execute(byte[] command, DataInputStream in, DataOutputStream out) throws IOException {
+    public void execute(byte[] command, DataInputStream in, DataOutputStream out, PrinterData printerData) throws IOException {
         out.write(new byte[] {27, 35, 42, 44, 10, 0});
     }
 

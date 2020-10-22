@@ -21,17 +21,7 @@ public class RasterPrintingJob extends PrintingJob {
 
     public RasterPrintingJob(byte[] data) {
         super(data);
-//        int finalWidth = 569;
-//        renderedImage = dataToImage(data, finalWidth);
-//
-//        for(int i = 300; i <= 400; i++) {
-//            BufferedImage image = dataToImage(data, i);
-//            try {
-//                ImageIO.write(image, "png", new File("/home/andrew/Desktop/raster/raster" + i + ".png"));
-//            } catch (IOException e) {
-//
-//            }
-//        }
+        this.imageData = new HashMap<>();
     }
 
     private BufferedImage dataToImage(byte[] data, int width) {

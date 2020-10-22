@@ -1,7 +1,7 @@
 package io.github.andrewsumsion.bluetoothprinter.commands;
 
 import io.github.andrewsumsion.bluetoothprinter.FakeBluetoothPrinter;
-import io.github.andrewsumsion.bluetoothprinter.PrintingMode;
+import io.github.andrewsumsion.bluetoothprinter.PrinterData;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -9,18 +9,20 @@ import java.io.IOException;
 
 public class UpdateETBStatusCommand implements InboundCommand {
     @Override
-    public boolean matches(byte[] command) {
+    public boolean matches(byte[] command, PrinterData printerData) {
         return command[0] == 23;
     }
 
     @Override
-    public void execute(byte[] command, DataInputStream in, DataOutputStream out) throws IOException {
-//        if(FakeBluetoothPrinter.data.getPrintingMode() == PrintingMode.RASTER) {
+    public void execute(byte[] command, DataInputStream in, DataOutputStream out, PrinterData printerData) throws IOException {
+//        if(printerData.getPrintingMode() == PrintingMode.RASTER) {
 //            return;
 //        }
-        FakeBluetoothPrinter.status.etbExecuted = true;
-        FakeBluetoothPrinter.status.etbCounter += 1;
-        FakeBluetoothPrinter.status.paperPresent = false;
+        printerData.getStatus().etbExecuted = true;
+        printerData.getStatus().etbCounter += 1;
+        printerData.getStatus().paperPresent = false;
+
+        printerData.flagFinishedJob();
     }
 
     @Override

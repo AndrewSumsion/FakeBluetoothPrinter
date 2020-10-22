@@ -3,6 +3,7 @@ package io.github.andrewsumsion.bluetoothprinter;
 import java.nio.charset.StandardCharsets;
 
 public class TextPrintingJob extends PrintingJob {
+    private String data;
 
     public TextPrintingJob(byte[] rawData) {
         super(rawData);
@@ -10,6 +11,9 @@ public class TextPrintingJob extends PrintingJob {
 
     @Override
     public String getData() {
-        return new String(rawData, StandardCharsets.UTF_8);
+        if(data == null) {
+            data = new String(rawData, StandardCharsets.UTF_8).replaceAll("\\p{C}", "?");
+        }
+        return data;
     }
 }

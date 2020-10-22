@@ -13,6 +13,8 @@ public class PrinterData {
     private int codePage;
     private int rasterWidth = 1000;
     private int rasterPointer = 0;
+    private boolean finishedJobFlag;
+    private PrinterStatus status = new PrinterStatus();
     private Map<Integer, BufferedImage> rasterData = new HashMap<>();
 
     public PrintingMode getPrintingMode() {
@@ -63,7 +65,25 @@ public class PrinterData {
         return rasterPointer;
     }
 
+    public PrinterStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PrinterStatus status) {
+        this.status = status;
+    }
+
     public void addRasterData(BufferedImage image) {
         rasterData.put(rasterPointer, image);
+    }
+
+    public void flagFinishedJob() {
+        finishedJobFlag = true;
+    }
+
+    public boolean isJobFinished() {
+        boolean flag = finishedJobFlag;
+        finishedJobFlag = false;
+        return flag;
     }
 }

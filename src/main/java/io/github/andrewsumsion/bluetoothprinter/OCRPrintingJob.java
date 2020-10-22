@@ -11,6 +11,7 @@ import java.util.Map;
 public class OCRPrintingJob extends PrintingJob {
     private BufferedImage image;
     private String dataFolder;
+    private String result;
 
     protected OCRPrintingJob(BufferedImage image, String dataFolder) {
         super(new byte[0]);
@@ -20,11 +21,15 @@ public class OCRPrintingJob extends PrintingJob {
 
     @Override
     public String getData() {
+        if(result != null) {
+            return result;
+        }
         ITesseract tesseract = new Tesseract();
         tesseract.setDatapath(dataFolder);
         //tesseract.setLanguage("eng");
         try {
-            return tesseract.doOCR(image);
+            result = tesseract.doOCR(image);
+            return result;
         } catch (TesseractException e) {
             throw new RuntimeException(e);
         }

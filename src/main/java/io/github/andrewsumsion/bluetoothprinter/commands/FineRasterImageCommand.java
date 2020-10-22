@@ -1,6 +1,6 @@
 package io.github.andrewsumsion.bluetoothprinter.commands;
 
-import io.github.andrewsumsion.bluetoothprinter.FakeBluetoothPrinter;
+import io.github.andrewsumsion.bluetoothprinter.PrinterData;
 import io.github.andrewsumsion.bluetoothprinter.PrintingMode;
 
 import java.awt.*;
@@ -11,14 +11,14 @@ import java.io.IOException;
 
 public class FineRasterImageCommand implements InboundCommand {
     @Override
-    public boolean matches(byte[] command) {
+    public boolean matches(byte[] command, PrinterData printerData) {
         return command[0] == 27 &&
                 command[1] == 88;
     }
 
     @Override
-    public void execute(byte[] command, DataInputStream in, DataOutputStream out) throws IOException {
-        FakeBluetoothPrinter.data.setPrintingMode(PrintingMode.HYBRID);
+    public void execute(byte[] command, DataInputStream in, DataOutputStream out, PrinterData printerData) throws IOException {
+        printerData.setPrintingMode(PrintingMode.HYBRID);
         int n1 = command[2] & 0xFF;
         int n2 = command[3] & 0xFF;
         int k = (n2 * 256 + n1) * 3;
@@ -26,7 +26,7 @@ public class FineRasterImageCommand implements InboundCommand {
         for(int i = 0; i < k; i++) {
             rawData[i] = (byte) in.read();
         }
-        FakeBluetoothPrinter.data.addRasterData(getData(rawData, (n2 * 256 + n1)));
+        printerData.addRasterData(getData(rawData, (n2 * 256 + n1)));
     }
 
     private BufferedImage getData(byte[] rawData, int width) {

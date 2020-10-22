@@ -1,6 +1,6 @@
 package io.github.andrewsumsion.bluetoothprinter.commands;
 
-import io.github.andrewsumsion.bluetoothprinter.FakeBluetoothPrinter;
+import io.github.andrewsumsion.bluetoothprinter.PrinterData;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -8,15 +8,15 @@ import java.io.IOException;
 
 public class SelectCodePageCommand implements InboundCommand {
     @Override
-    public boolean matches(byte[] command) {
+    public boolean matches(byte[] command, PrinterData printerData) {
         return command[0] == 27 &&
                 command[1] == 29 &&
                 command[2] == 116;
     }
 
     @Override
-    public void execute(byte[] command, DataInputStream in, DataOutputStream out) throws IOException {
-        FakeBluetoothPrinter.data.setCodePage(command[3]);
+    public void execute(byte[] command, DataInputStream in, DataOutputStream out, PrinterData printerData) throws IOException {
+        printerData.setCodePage(command[3]);
     }
 
     @Override

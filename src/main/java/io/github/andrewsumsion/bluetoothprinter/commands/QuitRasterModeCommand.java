@@ -1,6 +1,6 @@
 package io.github.andrewsumsion.bluetoothprinter.commands;
 
-import io.github.andrewsumsion.bluetoothprinter.FakeBluetoothPrinter;
+import io.github.andrewsumsion.bluetoothprinter.PrinterData;
 import io.github.andrewsumsion.bluetoothprinter.PrintingMode;
 
 import java.io.DataInputStream;
@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class QuitRasterModeCommand implements InboundCommand {
     @Override
-    public boolean matches(byte[] command) {
+    public boolean matches(byte[] command, PrinterData printerData) {
         return command[0] == 27 &&
                 command[1] == 42 &&
                 command[2] == 114 &&
@@ -17,9 +17,9 @@ public class QuitRasterModeCommand implements InboundCommand {
     }
 
     @Override
-    public void execute(byte[] command, DataInputStream in, DataOutputStream out) throws IOException {
-        if(FakeBluetoothPrinter.data.getPrintingMode() != PrintingMode.RASTER) {
-            FakeBluetoothPrinter.data.setPrintingMode(PrintingMode.PAGE);
+    public void execute(byte[] command, DataInputStream in, DataOutputStream out, PrinterData printerData) throws IOException {
+        if(printerData.getPrintingMode() != PrintingMode.RASTER) {
+            printerData.setPrintingMode(PrintingMode.PAGE);
         }
     }
 
