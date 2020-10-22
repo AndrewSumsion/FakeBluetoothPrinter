@@ -249,16 +249,22 @@ public class FakeBluetoothPrinter extends Plugin {
         public WrappedInputStream(InputStream wrapped) {
             this.wrapped = wrapped;
             File output = new File(System.getProperty("user.home") + "/Desktop/network-in.dat");
-            try {
-                fileOutputStream = new FileOutputStream(output);
-            } catch (FileNotFoundException e) {
-                fileOutputStream = new OutputStream() {
-                    @Override
-                    public void write(int i) throws IOException {
+//            try {
+//                fileOutputStream = new FileOutputStream(output);
+//            } catch (FileNotFoundException e) {
+//                fileOutputStream = new OutputStream() {
+//                    @Override
+//                    public void write(int i) throws IOException {
+//
+//                    }
+//                };
+//            }
+            fileOutputStream = new OutputStream() {
+                @Override
+                public void write(int i) throws IOException {
 
-                    }
-                };
-            }
+                }
+            };
         }
 
         @Override
@@ -287,17 +293,23 @@ public class FakeBluetoothPrinter extends Plugin {
 
         public WrappedOutputStream(OutputStream wrapped) {
             this.wrapped = wrapped;
-            File output = new File(System.getProperty("user.home") + "/Desktop/network-out.dat");
-            try {
-                fileOutputStream = new FileOutputStream(output);
-            } catch (FileNotFoundException e) {
-                fileOutputStream = new OutputStream() {
+//            File output = new File(System.getProperty("user.home") + "/Desktop/network-out.dat");
+//            try {
+//                fileOutputStream = new FileOutputStream(output);
+//            } catch (FileNotFoundException e) {
+//                fileOutputStream = new OutputStream() {
+//                    @Override
+//                    public void write(int i) throws IOException {
+//
+//                    }
+//                };
+//            }
+            fileOutputStream = new OutputStream() {
                     @Override
                     public void write(int i) throws IOException {
 
                     }
                 };
-            }
         }
 
         @Override
