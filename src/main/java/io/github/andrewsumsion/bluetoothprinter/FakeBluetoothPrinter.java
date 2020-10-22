@@ -107,7 +107,7 @@ public class FakeBluetoothPrinter extends Plugin {
         if(!tessDataFolder.exists()) {
             File zipFile = copyFileIfNotExistent("/tessdata.zip");
             unzip(zipFile);
-            //zipFile.delete();
+            zipFile.delete();
         }
 
     }

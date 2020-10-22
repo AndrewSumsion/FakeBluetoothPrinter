@@ -12,7 +12,7 @@ public class TextPrintingJob extends PrintingJob {
     @Override
     public String getData() {
         if(data == null) {
-            data = new String(rawData, StandardCharsets.UTF_8).replaceAll("\\p{C}", "?");
+            data = new String(rawData, StandardCharsets.UTF_8).replaceAll("\\p{C}", "");
         }
         return data;
     }
