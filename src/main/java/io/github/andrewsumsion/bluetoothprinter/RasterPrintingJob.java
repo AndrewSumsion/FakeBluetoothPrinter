@@ -87,6 +87,11 @@ public class RasterPrintingJob extends PrintingJob {
     }
 
     @Override
+    public RasterPrintingJob clone() {
+        return new RasterPrintingJob(imageData);
+    }
+
+    @Override
     public byte[] getRawData() {
         if(rawData.length < 1) {
             throw new UnsupportedOperationException("Hybrid Raster Jobs do not support raw data");

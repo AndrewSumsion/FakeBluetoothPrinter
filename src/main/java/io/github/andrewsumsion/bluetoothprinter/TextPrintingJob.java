@@ -16,4 +16,9 @@ public class TextPrintingJob extends PrintingJob {
         }
         return data;
     }
+
+    @Override
+    public TextPrintingJob clone() {
+        return new TextPrintingJob(rawData);
+    }
 }

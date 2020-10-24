@@ -40,23 +40,23 @@ public class JobManager {
         for(JobHandler handler : handlers) {
             if(handler instanceof TextJobHandler) {
                 if(job instanceof TextPrintingJob) {
-                    handler.handle(job);
+                    handler.handle(job.clone());
                 }
                 continue;
             }
             if(handler instanceof RasterJobHandler) {
                 if(job instanceof RasterPrintingJob) {
-                    handler.handle(job);
+                    handler.handle(job.clone());
                 }
                 continue;
             }
             if(handler instanceof OCRJobHandler) {
                 if(job instanceof OCRPrintingJob) {
-                    handler.handle(job);
+                    handler.handle(job.clone());
                 }
                 continue;
             }
-            handler.handle(job);
+            handler.handle(job.clone());
         }
     }
 }

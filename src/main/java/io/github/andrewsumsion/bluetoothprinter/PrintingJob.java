@@ -11,4 +11,5 @@ public abstract class PrintingJob {
         return rawData;
     }
     public abstract Object getData();
+    public abstract PrintingJob clone();
 }
