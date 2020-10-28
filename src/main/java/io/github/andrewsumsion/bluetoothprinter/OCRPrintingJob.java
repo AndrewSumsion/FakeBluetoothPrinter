@@ -43,6 +43,10 @@ public class OCRPrintingJob extends PrintingJob {
         }
     }
 
+    public BufferedImage getImage() {
+        return image;
+    }
+
     @Override
     public OCRPrintingJob clone() {
         OCRPrintingJob newJob = new OCRPrintingJob(image, dataFolder);
