@@ -15,7 +15,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class FakeBluetoothPrinter extends Plugin {
-    public static boolean debugInput = false;
+    public static boolean debugInput = true;
     public static boolean debugOutput = false;
 
     public static PrinterStatus status = new PrinterStatus();
@@ -174,62 +174,62 @@ public class FakeBluetoothPrinter extends Plugin {
     }
 
     private void startRFCOMMServer() throws IOException {
-        File file = new File(System.getProperty("user.home") + "/Desktop/sample-data/network-in.dat");
-        InputStream inputStream = new FileInputStream(file);
-        OutputStream outputStream = new OutputStream() {
-            @Override
-            public void write(int b) throws IOException {
+//        File file = new File(System.getProperty("user.home") + "/Desktop/sample-data/network-in.dat");
+//        InputStream inputStream = new FileInputStream(file);
+//        OutputStream outputStream = new OutputStream() {
+//            @Override
+//            public void write(int b) throws IOException {
+//
+//            }
+//        };
+//        Connection connection = new Connection(inputStream, outputStream);
+//        connection.runConnection();
+        LocalDevice local = LocalDevice.getLocalDevice();
+        System.out.println("Device name: " + local.getFriendlyName());
+        System.out.println("Bluetooth Address: " +
+                local.getBluetoothAddress());
 
+        UUID uuid = new UUID("0000110100001000800000805F9B34FB", false);
+        String connectionString = "btspp://localhost:" + uuid +";name=FakeBluetoothPrinter";
+
+        StreamConnectionNotifier streamConnNotifier = (StreamConnectionNotifier) Connector.open( connectionString );
+
+        System.out.println("\nServer Started. Waiting for clients to connect...");
+
+        while (true) {
+            if(Thread.currentThread().isInterrupted()) {
+                break;
             }
-        };
-        Connection connection = new Connection(inputStream, outputStream);
-        connection.runConnection();
-//        LocalDevice local = LocalDevice.getLocalDevice();
-//        System.out.println("Device name: " + local.getFriendlyName());
-//        System.out.println("Bluetooth Address: " +
-//                local.getBluetoothAddress());
-//
-//        UUID uuid = new UUID("0000110100001000800000805F9B34FB", false);
-//        String connectionString = "btspp://localhost:" + uuid +";name=FakeBluetoothPrinter";
-//
-//        StreamConnectionNotifier streamConnNotifier = (StreamConnectionNotifier) Connector.open( connectionString );
-//
-//        System.out.println("\nServer Started. Waiting for clients to connect...");
-//
-//        while (true) {
-//            if(Thread.currentThread().isInterrupted()) {
-//                break;
-//            }
-//
-//            final StreamConnection bluetoothConnection = streamConnNotifier.acceptAndOpen();
-//            Connection connection = new Connection(bluetoothConnection.openDataInputStream(), bluetoothConnection.openDataOutputStream());
-//            if(debugInput) {
-//                System.out.println("Client connected!");
-//            }
-//
-//            Thread connectionThread = new Thread() {
-//                @Override
-//                public void run() {
-//                    try {
-//                        connection.runConnection();
-//                        if(debugInput) {
-//                            System.out.println("\nDevice disconnected");
-//                        }
-//                    } catch (IOException ignored) {
-//
-//                    } finally {
-//                        try {
-//                            connection.close();
-//                        } catch (IOException ignored) {
-//
-//                        }
-//                    }
-//                }
-//            };
-//
-//            connectionThreads.put(connection, connectionThread);
-//            connectionThread.start();
-//        }
+
+            final StreamConnection bluetoothConnection = streamConnNotifier.acceptAndOpen();
+            Connection connection = new Connection(bluetoothConnection.openDataInputStream(), bluetoothConnection.openDataOutputStream());
+            if(debugInput) {
+                System.out.println("Client connected!");
+            }
+
+            Thread connectionThread = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        connection.runConnection();
+                        if(debugInput) {
+                            System.out.println("\nDevice disconnected");
+                        }
+                    } catch (IOException ignored) {
+
+                    } finally {
+                        try {
+                            connection.close();
+                        } catch (IOException ignored) {
+
+                        }
+                    }
+                }
+            };
+
+            connectionThreads.put(connection, connectionThread);
+            connectionThread.start();
+        }
     }
 
     private String formatModelString(String modelString) {
